@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  @apply h-full bg-black
+  @apply h-full bg-black;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -15,5 +15,5 @@
 }
 
 body {
-  @apply h-full bg-black
+  @apply h-full bg-black;
 }

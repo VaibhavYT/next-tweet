@@ -1,124 +1,112 @@
-import React, { useState, useCallback } from "react";
+import useLoginModal from "../../hooks/useLoginModal";
+import useRegisterModal from "../../hooks/useRegisterModal";
+import axios from "axios";
+
+import { Island_Moments } from "next/font/google";
+import { SetStateAction, useCallback, useState } from "react";
+import { toast } from 'react-hot-toast';
+import { signIn } from 'next-auth/react';
 
 import Input from "../Input";
 import Modal from "../Modal";
-import axios from "axios";
-import { toast } from "react-hot-toast";
-import { signIn } from "next-auth/react";
-import useLoginModal from "../../hooks/useLoginModal";
-import useRegisterModal from "../../hooks/useRegisterModal";
 
 const RegisterModal = () => {
-  const loginModal = useLoginModal();
-  const registerModal = useRegisterModal();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
-  const [username, setUsername] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+    const loginModal = useLoginModal();
+    const registerModal = useRegisterModal();
 
-  const onToggle = useCallback(() => {
-    if (isLoading) {
-      return;
-    }
-    loginModal.onOpen();
-    registerModal.onClose();
-  }, [isLoading, loginModal, registerModal]);
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [name, setName] = useState('');
+    const [username, setUsername] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
-  const onSubmit = useCallback(async () => {
-    try {
-      setIsLoading(true);
+    const onSubmit = useCallback(async() => {
+        try {
+            setIsLoading(true);
+            
+            await axios.post('/api/register', {
+                email,
+                password,
+                username,
+                name
+            });
 
-      await axios.post("/api/register", {
-        email,
-        password,
-        name,
-        username,
-      });
+            toast.success('Account created');
 
-      toast.success("Account Created Successfully");
+            signIn('credentials', {
+                email,
+                password
+            });
 
-      signIn("credentials", {
-        email,
-        password,
-      });
+            registerModal.onClose();
+        } catch (error) {
+            console.log(error);
+            toast.error("something went wrong");
+        } finally {
+            setIsLoading(false);
+        }
+    }, [registerModal, email, password, username, name]);
 
-      registerModal.onClose();
-    } catch (error) {
-      console.log(error);
-      toast.error("Something went wrong");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [registerModal, email, password, username, name]);
+    const onToggle = useCallback(() => {
+        if(isLoading) {
+            return;
+        }
+        registerModal.onClose();
+        loginModal.onOpen();
 
-  const bodyContent = (
-    <div className="flex flex-col gap-4">
-      <Input
-        placeholder="Email"
-        onchange={(e) => {
-          setEmail(e.target.value);
-        }}
-        value={email}
-        disabled={isLoading}
-      />
-      <Input
-        placeholder="Name"
-        onchange={(e) => {
-          setName(e.target.value);
-        }}
-        value={name}
-        disabled={isLoading}
-      />
-      <Input
-        placeholder="username"
-        onchange={(e) => {
-          setUsername(e.target.value);
-        }}
-        value={username}
-        disabled={isLoading}
-      />
-      <Input
-        placeholder="password"
-        onchange={(e) => {
-          setPassword(e.target.value);
-        }}
-        type="password"
-        value={password}
-        disabled={isLoading}
-      />
-    </div>
-  );
+    }, [isLoading, registerModal, loginModal])
 
-  const footerContent = (
-    <div className="text-neutral-400 text-center mt-4">
-      <p className="">
-        Already have an account?
-        <span
-          className="text-white cursor-pointer hover:underline"
-          onClick={onToggle}
-        >
-          {" "}
-          Sign In
-        </span>
-      </p>
-    </div>
-  );
+    const bodyContent = (
+        <div className="flex flex-col gap-4">
+            <Input 
+                placeholder="Email"
+                onChange={(e: { target: { value: SetStateAction<string>; }; }) => setEmail(e.target.value)}
+                value={email}
+                disabled={isLoading}
+            />
+            <Input 
+                placeholder="Name"
+                onChange={(e: { target: { value: SetStateAction<string>; }; }) => setName(e.target.value)}
+                value={name}
+                disabled={isLoading}
+            />
+            <Input 
+                placeholder="Username"
+                onChange={(e: { target: { value: SetStateAction<string>; }; }) => setUsername(e.target.value)}
+                value={username}
+                disabled={isLoading}
+            />
+            <Input 
+                placeholder="Password"
+                onChange={(e: { target: { value: SetStateAction<string>; }; }) => setPassword(e.target.value)}
+                value={password}
+                type="password"
+                disabled={isLoading}
+            />
+        </div>
+    );
 
-  return (
-    <div>
-      <Modal
-        disabled={isLoading}
-        isOpen={registerModal.isOpen}
-        title="Create an account"
-        actionLabel="Register"
-        onClose={registerModal.onClose}
-        onSubmit={onSubmit}
-        body={bodyContent}
-        footer={footerContent}
-      />
-    </div>
-  );
-};
+    const footerContent = (
+        <div className="text-neutral-400 text-center - mt-4">
+            <p>Already have an account? 
+                <span onClick={onToggle} className="text-white cursor-pointer hover:underline"> Sign in</span>
+            </p>
+        </div>
+
+    );
+    
+    return(
+        <Modal 
+            disabled={isLoading}
+            isOpen={registerModal.isOpen}
+            title="Create and account!"
+            actionLabel="Register"
+            onClose={registerModal.onClose}
+            onSubmit={onSubmit}
+            body={bodyContent}
+            footer={footerContent}
+        />
+    );
+}
 
 export default RegisterModal;

@@ -1,18 +1,27 @@
-import "@/styles/globals.css";
-import type { AppProps } from "next/app";
-import Layout from "../../components/Layout";
-import Modal from "../../components/Modal";
+import type { AppProps } from 'next/app'
+import { Toaster } from 'react-hot-toast';
+import { SessionProvider } from 'next-auth/react';
+
+import Layout from '../../components/Layout'
+import '@/styles/globals.css'
+
+import LoginModal from '../../components/modals/LoginModal'
+import RegisterModal from '../../components/modals/RegisterModal'
+import EditModal from '../../components/modals/EditModal';
+// import Modal from '@/components/Modal'
+
 
 export default function App({ Component, pageProps }: AppProps) {
-  return (
-    <Layout>
-      <Modal
-        onClose={() => {}}
-        onSubmit={() => {}}
-        title="Test Modal"
-        actionLabel="Submit"
-      />
-      <Component {...pageProps} />
-    </Layout>
-  );
+  return(
+    <SessionProvider session={pageProps.session}>
+      {/* <Modal actionLabel="Submit" isOpen title="TestModal" /> */}
+      <Toaster />
+      <EditModal />
+      <RegisterModal />
+      <LoginModal />
+      <Layout>
+        <Component {...pageProps} />
+      </Layout>
+    </SessionProvider>
+  )
 }
